@@ -1,11 +1,10 @@
-# Managed by Copier — do not edit. This file is what makes `copier update` work.
-# SKELETON: hand-written stand-in; regenerate with a real `copier copy --defaults` at v1
-# (the render-drift CI job then keeps it honest).
+# Managed by Copier in a real generated project — do not edit; it's what makes
+# `copier update` work. This committed copy is a representative stand-in (a real
+# render stamps _commit with the template's git ref, which changes every commit),
+# so the render-drift CI check excludes this one file.
 _src_path: https://gitlab.com/moby-pi/pi-gitops-starter.git
 app_name: example-app
 description: A small service.
-gitlab_project_path: your-group/example-app
 port: 8000
 python_package: example_app
 python_version: "3.13"
-registry: registry.gitlab.com

@@ -47,8 +47,8 @@ job is the working example).
 
 **Symptom:** a job that resolves git state (copier, setuptools-scm, versioning plugins) "works" but produces subtly
 wrong output. **Cause:** `-slim` images often ship without git, and many tools fall back to a degraded non-VCS mode
-instead of failing. **Fix:** when a job needs repo metadata, use the non-slim image variant (this repo's `render-drift`
-job hit exactly this).
+instead of failing. **Fix:** when a job needs repo metadata, use the non-slim image variant (this repo's
+`template-validate` job hit exactly this).
 
 ## A merge to the flux repo IS a deploy
 

@@ -17,5 +17,5 @@ The first `uv sync` writes `uv.lock` — commit it; CI and the Docker build run 
 
 ## Deploy
 
-Pushing to the default branch builds an image via GitLab CI into `{{ registry }}/{{ gitlab_project_path }}`; Flux
-image automation rolls it out. See the starter kit's `flux/` skeleton for the cluster side.
+Pushing to the default branch builds an image via GitLab CI into this project's container registry
+(`$CI_REGISTRY_IMAGE`); Flux image automation rolls it out. See the starter kit's `flux/` skeleton for the cluster side.

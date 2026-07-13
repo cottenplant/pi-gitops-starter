@@ -2,7 +2,6 @@
 # everything else in this repo is documentation, the rendered example, and the flux skeleton.
 
 _subdirectory: template
-_templates_suffix: .jinja
 _min_copier_version: "9.0.0"
 
 app_name:
@@ -19,16 +18,6 @@ description:
   type: str
   help: One-line service description
   default: A small service.
-
-gitlab_project_path:
-  type: str
-  help: GitLab project path the service repo will live at (group/project)
-  default: "your-group/{{ app_name }}"
-
-registry:
-  type: str
-  help: Container registry host
-  default: registry.gitlab.com
 
 python_version:
   type: str

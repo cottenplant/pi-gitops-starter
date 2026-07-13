@@ -27,13 +27,7 @@ flux/
     └── pull-secret/      # sops walkthrough + example — no secret material in this repo
 ```
 
-## Gotchas (the short version)
+## Gotchas
 
-- **Pruning deletes Services too**, and LoadBalancer Services can wedge on cloud/LB cleanup finalizers — check for stuck
-  finalizers before assuming prune finished.
-- **Default-deny NetworkPolicy blocks DNS** unless you explicitly allow egress to kube-dns; nothing resolves, and the
-  failure looks like an app bug.
-- **Validate before Flux does.** `kustomize build | kubeconform` in CI catches schema errors as MR feedback instead of
-  as a failed reconciliation on the cluster.
-
-Longer versions with context: [docs/gotchas.md](../docs/gotchas.md).
+The lessons behind this layout — pruning, DNS-under-default-deny, the namespace transformer, and more — live in
+[docs/gotchas.md](../docs/gotchas.md).

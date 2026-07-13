@@ -1,26 +1,14 @@
 # Self-validating: this repo renders its own template, tests the rendered app,
 # and builds its own flux skeleton on every pipeline. The repo being green IS
-# the demo.
-
-stages: [lint, render, validate]
-
-markdownlint:
-  stage: lint
-  image:
-    name: davidanson/markdownlint-cli2:v0.23.0
-    entrypoint: [""]
-  script:
-    - markdownlint-cli2 "**/*.md"
+# the demo. Four independent jobs, one implicit stage — maximally parallel.
 
 prettier:
-  stage: lint
   image: node:22-slim
   script:
     - npx prettier@3.9.5 --check "**/*.{md,yml,yaml,json}"
 
 # Full-history secret scan — table stakes for a public repo.
 secret-scan:
-  stage: lint
   image:
     name: zricethezav/gitleaks:v8.30.1
     entrypoint: [""]
@@ -29,20 +17,13 @@ secret-scan:
   script:
     - gitleaks git --no-banner --redact .
 
-# Render the template with default answers and fail if the committed example drifted.
-render-drift:
-  stage: render
+# Render the template with default answers, fail if the committed example
+# drifted, then prove the rendered project actually works.
+template-validate:
   image: ghcr.io/astral-sh/uv:python3.13-bookworm
   script:
     - uvx copier copy --defaults --vcs-ref=HEAD . /tmp/rendered/example-app
     - diff -r --exclude=.copier-answers.yml /tmp/rendered/example-app example/example-app
-
-# The rendered project must actually work: install, then pass its own tests.
-rendered-app-test:
-  stage: validate
-  image: ghcr.io/astral-sh/uv:python3.13-bookworm
-  script:
-    - uvx copier copy --defaults --vcs-ref=HEAD . /tmp/rendered/example-app
     - cd /tmp/rendered/example-app
     - uv sync
     - uv run pytest -q
@@ -50,7 +31,6 @@ rendered-app-test:
 # Every flux entry point must build, and the output must be schema-valid.
 # Flux CRs (Image*, Kustomization) have no upstream schemas and are skipped.
 kustomize-validate:
-  stage: validate
   image: alpine:3.22
   variables:
     KUSTOMIZE_VERSION: v5.8.1
