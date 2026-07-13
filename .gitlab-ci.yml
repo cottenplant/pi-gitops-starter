@@ -1,34 +1,42 @@
-# Self-validating skeleton: this repo renders its own template and builds its own
-# flux skeleton on every pipeline. The repo being green IS the demo.
-# SKELETON: job bodies are drafts — unvalidated until v1. Open questions:
-#   - runner arch/tags (gitlab.com arm64 SaaS runners vs self-hosted)
-#   - pin tool versions (copier, kustomize, kubeconform) once chosen
+# Self-validating: this repo renders its own template and builds its own flux
+# skeleton on every pipeline. The repo being green IS the demo.
+# Open question for v1: runner arch is auto-detected in kustomize-validate; the
+# template's image-build job still needs an arch decision (see template/.gitlab-ci.yml.jinja).
 
 stages: [lint, render, validate]
 
 markdownlint:
   stage: lint
-  image: davidanson/markdownlint-cli2 # TODO(v1): pin version
+  image:
+    name: davidanson/markdownlint-cli2:v0.23.0
+    entrypoint: [""]
   script:
     - markdownlint-cli2 "**/*.md"
 
 prettier:
   stage: lint
-  image: node:22-slim # TODO(v1): pin version
+  image: node:22-slim
   script:
-    - npx prettier@3 --check "**/*.{md,yml,yaml,json}"
+    - npx prettier@3.9.5 --check "**/*.{md,yml,yaml,json}"
 
 # Render the template with default answers and fail if the committed example drifted.
 render-drift:
   stage: render
-  image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim # TODO(v1): pin version
+  image: ghcr.io/astral-sh/uv:python3.13-bookworm
   script:
     - uvx copier copy --defaults --vcs-ref=HEAD . /tmp/rendered/example-app
     - diff -r --exclude=.copier-answers.yml /tmp/rendered/example-app example/example-app
 
 # Every flux entry point must build, and the output must be schema-valid.
+# Flux CRs (ImageRepository/ImagePolicy) have no upstream schemas and are skipped.
 kustomize-validate:
   stage: validate
-  image: alpine:3 # TODO(v1): proper image with kustomize + kubeconform pinned
+  image: alpine:3.22
+  variables:
+    KUSTOMIZE_VERSION: v5.8.1
+    KUBECONFORM_VERSION: v0.8.0
   script:
-    - kustomize build flux/apps/example-app | kubeconform -strict -ignore-missing-schemas
+    - ARCH=$(uname -m); case "$ARCH" in x86_64) ARCH=amd64 ;; aarch64) ARCH=arm64 ;; esac
+    - wget -qO- "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz" | tar xz -C /usr/local/bin
+    - wget -qO- "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" | tar xz -C /usr/local/bin
+    - kustomize build flux/apps/example-app | kubeconform -strict -ignore-missing-schemas -summary
