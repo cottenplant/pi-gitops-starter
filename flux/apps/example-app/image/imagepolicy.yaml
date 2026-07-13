@@ -1,0 +1,15 @@
+# Selects the newest image by pipeline number extracted from the tag
+# (<branch>-<shortsha>-<pipeline-iid> — see the template's .gitlab-ci.yml).
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: example-app
+spec:
+  imageRepositoryRef:
+    name: example-app
+  filterTags:
+    pattern: "^main-[a-f0-9]+-(?P<build>[0-9]+)$"
+    extract: "$build"
+  policy:
+    numerical:
+      order: asc

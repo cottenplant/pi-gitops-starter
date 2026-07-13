@@ -1,0 +1,11 @@
+# Managed by Copier — do not edit. This file is what makes `copier update` work.
+# SKELETON: hand-written stand-in; regenerate with a real `copier copy --defaults` at v1
+# (the render-drift CI job then keeps it honest).
+_src_path: https://gitlab.com/moby-pi/pi-gitops-starter.git
+app_name: example-app
+description: A small service.
+gitlab_project_path: your-group/example-app
+port: 8000
+python_package: example_app
+python_version: "3.13"
+registry: registry.gitlab.com

@@ -1,0 +1,9 @@
+# SKELETON: namespace placement of image automation objects (app ns vs flux-system)
+# is an open decision for v1 — cross-namespace refs need explicit allowance.
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: example-app
+spec:
+  image: registry.gitlab.com/your-group/example-app
+  interval: 5m

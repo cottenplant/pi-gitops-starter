@@ -1,0 +1,21 @@
+# SKELETON: probes/resources land at v1.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+        - name: example-app
+          # The trailing comment is the Flux image automation marker — it rewrites this line.
+          image: registry.gitlab.com/your-group/example-app:main-0000000-1 # {"$imagepolicy": "example-app:example-app"}
+          ports:
+            - containerPort: 8000

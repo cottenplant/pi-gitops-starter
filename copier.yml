@@ -1,0 +1,42 @@
+# Copier configuration. The template files live under template/ (_subdirectory);
+# everything else in this repo is documentation, the rendered example, and the flux skeleton.
+# SKELETON: question list is directional; defaults unvalidated until v1.
+
+_subdirectory: template
+_templates_suffix: .jinja
+_min_copier_version: "9.0.0"
+
+app_name:
+  type: str
+  help: Service name (kebab-case; used for the image name and k8s resources)
+  default: example-app
+
+python_package:
+  type: str
+  help: Python import package name
+  default: "{{ app_name | replace('-', '_') }}"
+
+description:
+  type: str
+  help: One-line service description
+  default: A small service.
+
+gitlab_project_path:
+  type: str
+  help: GitLab project path the service repo will live at (group/project)
+  default: "your-group/{{ app_name }}"
+
+registry:
+  type: str
+  help: Container registry host
+  default: registry.gitlab.com
+
+python_version:
+  type: str
+  help: Python version
+  default: "3.13"
+
+port:
+  type: int
+  help: HTTP port the service listens on
+  default: 8000

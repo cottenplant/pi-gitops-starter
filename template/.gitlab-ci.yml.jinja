@@ -1,0 +1,22 @@
+# Build + push to the GitLab registry with tags Flux image automation can sort.
+# SKELETON: job bodies land at v1. Open decisions: build tool (buildah/kaniko/buildx)
+# and runner arch (native arm64 runner vs qemu cross-build).
+stages: [test, build]
+
+test:
+  stage: test
+  image: ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim
+  script:
+    - uv sync --frozen
+    - uv run pytest
+
+build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    # Tag convention: <branch>-<shortsha>-<pipeline-iid> — the trailing pipeline number
+    # gives Flux ImagePolicy a monotonically increasing value to sort on.
+    # TODO(v1): actual build/push commands for
+    #   {{ registry }}/{{ gitlab_project_path }}:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_IID
+    - echo "TODO(v1)"
