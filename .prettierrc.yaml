@@ -1,0 +1,9 @@
+# Formatting standard mirrored from the source cluster's repos: word-wrapped
+# prose + aligned tables. Scoped to *.md via overrides so it never reflows
+# YAML/k8s manifests.
+---
+overrides:
+  - files: "*.md"
+    options:
+      proseWrap: always # hard-wrap prose at printWidth
+      printWidth: 120

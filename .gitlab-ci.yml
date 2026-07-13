@@ -1,7 +1,6 @@
-# Self-validating: this repo renders its own template and builds its own flux
-# skeleton on every pipeline. The repo being green IS the demo.
-# Open question for v1: runner arch is auto-detected in kustomize-validate; the
-# template's image-build job still needs an arch decision (see template/.gitlab-ci.yml.jinja).
+# Self-validating: this repo renders its own template, tests the rendered app,
+# and builds its own flux skeleton on every pipeline. The repo being green IS
+# the demo.
 
 stages: [lint, render, validate]
 
@@ -19,6 +18,17 @@ prettier:
   script:
     - npx prettier@3.9.5 --check "**/*.{md,yml,yaml,json}"
 
+# Full-history secret scan — table stakes for a public repo.
+secret-scan:
+  stage: lint
+  image:
+    name: zricethezav/gitleaks:v8.30.1
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: "0" # full clone so the whole history is scanned
+  script:
+    - gitleaks git --no-banner --redact .
+
 # Render the template with default answers and fail if the committed example drifted.
 render-drift:
   stage: render
@@ -27,8 +37,18 @@ render-drift:
     - uvx copier copy --defaults --vcs-ref=HEAD . /tmp/rendered/example-app
     - diff -r --exclude=.copier-answers.yml /tmp/rendered/example-app example/example-app
 
+# The rendered project must actually work: install, then pass its own tests.
+rendered-app-test:
+  stage: validate
+  image: ghcr.io/astral-sh/uv:python3.13-bookworm
+  script:
+    - uvx copier copy --defaults --vcs-ref=HEAD . /tmp/rendered/example-app
+    - cd /tmp/rendered/example-app
+    - uv sync
+    - uv run pytest -q
+
 # Every flux entry point must build, and the output must be schema-valid.
-# Flux CRs (ImageRepository/ImagePolicy) have no upstream schemas and are skipped.
+# Flux CRs (Image*, Kustomization) have no upstream schemas and are skipped.
 kustomize-validate:
   stage: validate
   image: alpine:3.22
@@ -40,3 +60,4 @@ kustomize-validate:
     - wget -qO- "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz" | tar xz -C /usr/local/bin
     - wget -qO- "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" | tar xz -C /usr/local/bin
     - kustomize build flux/apps/example-app | kubeconform -strict -ignore-missing-schemas -summary
+    - kustomize build flux/images | kubeconform -strict -ignore-missing-schemas -summary

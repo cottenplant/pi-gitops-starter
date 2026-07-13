@@ -1,8 +1,0 @@
-{
-  // SKELETON: mirror the source repos' final rule set at v1.
-  "config": {
-    "default": true,
-    "MD013": { "line_length": 120 }
-  },
-  "ignores": ["**/node_modules/**", "template/**"]
-}
