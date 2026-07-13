@@ -1,6 +1,8 @@
-# SKELETON: real entrypoint lands at v1 (candidate: uvicorn serving a /healthz FastAPI app).
+import uvicorn
+
+
 def main() -> None:
-    print("{{ app_name }}: TODO(v1)")
+    uvicorn.run("{{ python_package }}.app:app", host="0.0.0.0", port={{ port }})
 
 
 if __name__ == "__main__":

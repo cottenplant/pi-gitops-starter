@@ -1,6 +1,5 @@
 # Copier configuration. The template files live under template/ (_subdirectory);
 # everything else in this repo is documentation, the rendered example, and the flux skeleton.
-# SKELETON: question list is directional; defaults unvalidated until v1.
 
 _subdirectory: template
 _templates_suffix: .jinja

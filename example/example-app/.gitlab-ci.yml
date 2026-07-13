@@ -1,6 +1,6 @@
-# Build + push to the GitLab registry with tags Flux image automation can sort.
-# SKELETON: job bodies land at v1. Open decisions: build tool (buildah/kaniko/buildx)
-# and runner arch (native arm64 runner vs qemu cross-build).
+# Test on every pipeline; build + push to the GitLab registry on the default
+# branch only. Extracted from a live cluster's CI — see the pi-gitops-starter
+# docs for the reasoning behind the tag scheme and the MR-build hazard.
 stages: [test, build]
 
 test:
@@ -8,15 +8,39 @@ test:
   image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
   script:
     - uv sync --frozen
-    - uv run pytest
+    - uv run pytest -q
 
+# Native arm64 build on GitLab.com's hosted arm64 runner (no qemu). Swap the
+# `tags:` line for your own runner tag if self-hosted. Tag scheme
+# <unix-ts>-<shortsha>: the Flux ImagePolicy sorts on the numeric timestamp
+# prefix; the sha stays for traceability.
+#
+# Deliberately NOT offered as a manual MR build: an MR-built image would land in
+# the same registry path the ImagePolicy scans by highest timestamp, so it could
+# be auto-pinned and deployed before the MR merges.
 build:
   stage: build
+  image: docker:27
+  services: [docker:27-dind]
+  tags: [saas-linux-small-arm64]
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: /certs
+    DOCKER_BUILDKIT: "1"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
-    # Tag convention: <branch>-<shortsha>-<pipeline-iid> — the trailing pipeline number
-    # gives Flux ImagePolicy a monotonically increasing value to sort on.
-    # TODO(v1): actual build/push commands for
-    #   registry.gitlab.com/your-group/example-app:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_IID
-    - echo "TODO(v1)"
+    - TAG="$(date +%s)-$CI_COMMIT_SHORT_SHA"
+    - CACHE="$CI_REGISTRY_IMAGE:cache"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    # BuildKit inline cache: warm layers from the mutable :cache tag (build
+    # cache only — never referenced by a manifest), build, push image + cache.
+    - docker build
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --cache-from "$CACHE"
+      -t "$CI_REGISTRY_IMAGE:$TAG"
+      -t "$CACHE"
+      .
+    - docker push "$CI_REGISTRY_IMAGE:$TAG"
+    - docker push "$CACHE"
+    - echo "pushed $CI_REGISTRY_IMAGE:$TAG"

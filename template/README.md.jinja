@@ -10,6 +10,7 @@ Generated from [pi-gitops-starter](https://gitlab.com/moby-pi/pi-gitops-starter)
 ```sh
 uv sync
 uv run pytest
+uv run python -m {{ python_package }}  # serves http://localhost:{{ port }}/healthz
 ```
 
 The first `uv sync` writes `uv.lock` — commit it; CI and the Docker build run `--frozen` against it.

@@ -1,5 +1,4 @@
 # Multi-stage arm64-friendly build: uv resolves everything, no apt layer.
-# SKELETON: unvalidated draft — build and boot this for real at v1.
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS build
 WORKDIR /app
 COPY pyproject.toml uv.lock ./

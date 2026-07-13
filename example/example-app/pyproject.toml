@@ -1,13 +1,16 @@
-# SKELETON: dependency choices land at v1 (candidates: fastapi/uvicorn, pydantic-settings).
 [project]
 name = "example-app"
 version = "0.1.0"
 description = "A small service."
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi",
+    "uvicorn",
+]
 
 [dependency-groups]
 dev = [
+    "httpx",
     "pytest",
 ]
 
