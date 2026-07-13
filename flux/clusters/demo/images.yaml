@@ -1,0 +1,14 @@
+# Image-scanning CRs for all apps, reconciled as one unit (they all live in
+# flux-system, so they don't belong inside any single app's Kustomization).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: images
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./flux/images
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

@@ -1,3 +1,7 @@
+# `namespace: example-app` stamps every namespaced resource below — including
+# anything a component injects — into the app's namespace. The flux-system
+# ImageRepository/ImagePolicy pair lives in ./image with its OWN kustomization
+# so this transformer can't rewrite it (see image/kustomization.yaml).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: example-app
@@ -5,7 +9,7 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - image/imagerepository.yaml
-  - image/imagepolicy.yaml
 components:
   - ../../components/network-policies
+  # Pulling from a private registry? Encrypt the pull secret first, then enable:
+  # - ../../components/pull-secret

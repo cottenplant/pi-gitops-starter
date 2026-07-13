@@ -16,18 +16,21 @@ automation — behind its own Flux Kustomization with pruning enabled.
 
 ```text
 flux/
-├── clusters/demo/        # cluster entry point — one apps-<name> Kustomization per app
+├── .sops.yaml            # encryption rule for *.enc.yaml (bring your own age key)
+├── clusters/demo/        # cluster entry point: apps-<name> + images + image-update-automation
 │   └── flux-system/      # populated by `flux bootstrap`, committed by Flux itself
-├── apps/<name>/          # everything the app owns (ns, netpol via component, workload, image automation)
+├── apps/<name>/          # everything the app owns (ns, netpol via component, workload)
+│   └── image/            # the app's flux-system image CRs — own kustomization, no namespace field
+├── images/               # aggregates every apps/*/image dir for the images Kustomization
 └── components/           # kustomize Components shared across apps
     ├── network-policies/ # default-deny baseline + DNS egress
-    └── pull-secret/      # pointer only — no secret material in this repo
+    └── pull-secret/      # sops walkthrough + example — no secret material in this repo
 ```
 
 ## Gotchas (the short version)
 
-- **Pruning deletes Services too**, and LoadBalancer Services can wedge on cloud/LB cleanup finalizers — check for
-  stuck finalizers before assuming prune finished.
+- **Pruning deletes Services too**, and LoadBalancer Services can wedge on cloud/LB cleanup finalizers — check for stuck
+  finalizers before assuming prune finished.
 - **Default-deny NetworkPolicy blocks DNS** unless you explicitly allow egress to kube-dns; nothing resolves, and the
   failure looks like an app bug.
 - **Validate before Flux does.** `kustomize build | kubeconform` in CI catches schema errors as MR feedback instead of

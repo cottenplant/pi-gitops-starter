@@ -1,0 +1,33 @@
+# Single fleet-wide automation. Walks every `# {"$imagepolicy": ...}` marker
+# under ./flux/apps, resolves each against its ImagePolicy, rewrites the marked
+# image line to the newest tag, and commits the pin back to this repo.
+# Rollback = `git revert` the automation commit.
+#
+# The flux-system GitRepository's deploy key MUST have write access for the
+# push to succeed — bootstrap with --read-write-key (see docs/bootstrap.md).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: fluxcdbot
+        email: fluxcdbot@users.noreply.gitlab.com
+      # Flux v2.8+ removed the '.Updated' template field; use '.Changed'.
+      messageTemplate: |
+        chore(images): pin {{range .Changed.Changes}}{{.NewValue}} {{end}}
+    push:
+      branch: main
+  update:
+    path: ./flux/apps
+    strategy: Setters

@@ -1,0 +1,8 @@
+# Image-scanning CRs (flux-system scoped). A separate kustomization with NO
+# `namespace:` so the app-namespace transformer in ../kustomization.yaml can't
+# rewrite them. Wired from clusters/demo via the `images` Kustomization.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - imagerepository.yaml
+  - imagepolicy.yaml

@@ -1,0 +1,16 @@
+# Reusable Component: injects the `gitlab-registry` image pull secret into the
+# consuming app's namespace. An app kustomization adds:
+#
+#   components:
+#     - ../../components/pull-secret
+#
+# and its `namespace: <app>` transformer stamps this one encrypted blob into
+# that app's namespace — one secret, many namespaces.
+#
+# secret.enc.yaml is NOT committed until YOU create and encrypt it — see
+# README.md and secret.example.yaml. Enabling this component before that file
+# exists fails the kustomize build (by design: no plaintext fallback).
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - secret.enc.yaml

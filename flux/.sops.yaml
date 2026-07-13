@@ -1,0 +1,7 @@
+# sops creation rule: anything named *.enc.yaml encrypts to the age recipient
+# below. Replace the placeholder with your own public key (age-keygen prints
+# it); sops refuses to encrypt until you do — there is no default-key fallback.
+creation_rules:
+  - path_regex: .*\.enc\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1REPLACE-WITH-YOUR-PUBLIC-KEY

@@ -1,0 +1,6 @@
+# Aggregates every app's image/ dir into the single `images` Flux Kustomization
+# (clusters/demo/images.yaml). Add one line per app.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../apps/example-app/image

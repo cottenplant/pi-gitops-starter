@@ -1,5 +1,4 @@
 # One Flux Kustomization per app, named apps-<name>. Add one block per app.
-# SKELETON: intervals/timeouts are placeholders until v1.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -14,3 +13,8 @@ spec:
     name: flux-system
   wait: true
   timeout: 3m
+  # Building sops-encrypted files (e.g. the pull-secret component)? Enable:
+  # decryption:
+  #   provider: sops
+  #   secretRef:
+  #     name: sops-age

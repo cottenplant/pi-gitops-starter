@@ -1,4 +1,3 @@
-# SKELETON: probes/resources land at v1.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,9 +12,32 @@ spec:
       labels:
         app: example-app
     spec:
+      # Pulling from a private registry? Uncomment (secret comes from the
+      # pull-secret component — see flux/components/pull-secret/README.md):
+      # imagePullSecrets:
+      #   - name: gitlab-registry
       containers:
         - name: example-app
-          # The trailing comment is the Flux image automation marker — it rewrites this line.
-          image: registry.gitlab.com/your-group/example-app:main-0000000-1 # {"$imagepolicy": "example-app:example-app"}
+          # The trailing comment is the Flux image automation marker — the
+          # ImageUpdateAutomation rewrites this line to the newest tag matching
+          # the flux-system/example-app ImagePolicy.
+          image: registry.gitlab.com/your-group/example-app:1700000000-0000000 # {"$imagepolicy": "flux-system:example-app"}
           ports:
             - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          # Pi-sized defaults: small requests for bin-packing on 4-8GB nodes, a
+          # memory limit so a leak can't take the node down, and no cpu limit
+          # (throttling hurts more than it protects on a homelab).
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
