@@ -12,8 +12,8 @@ test:
 
 # Native arm64 build on GitLab.com's hosted arm64 runner (no qemu). Swap the
 # `tags:` line for your own runner tag if self-hosted. Tag scheme
-# <unix-ts>-<shortsha>: the Flux ImagePolicy sorts on the numeric timestamp
-# prefix; the sha stays for traceability.
+# <pipeline-iid>-<shortsha>: the Flux ImagePolicy sorts on GitLab's monotonic,
+# project-scoped pipeline IID; the sha stays for traceability.
 #
 # Deliberately NOT offered as a manual MR build: an MR-built image would land in
 # the same registry path the ImagePolicy scans by highest timestamp, so it could
@@ -21,7 +21,7 @@ test:
 build:
   stage: build
   image: docker:27
-  services: [docker:27-dind]
+  services: ["docker:27-dind"]
   tags: [saas-linux-small-arm64]
   variables:
     DOCKER_HOST: tcp://docker:2376
@@ -30,7 +30,7 @@ build:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
-    - TAG="$(date +%s)-$CI_COMMIT_SHORT_SHA"
+    - TAG="$CI_PIPELINE_IID-$CI_COMMIT_SHORT_SHA"
     - CACHE="$CI_REGISTRY_IMAGE:cache"
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     # BuildKit inline cache: warm layers from the mutable :cache tag (build

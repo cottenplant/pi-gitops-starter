@@ -41,3 +41,6 @@ kustomize-validate:
     - wget -qO- "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" | tar xz -C /usr/local/bin
     - kustomize build flux/apps/example-app | kubeconform -strict -ignore-missing-schemas -summary
     - kustomize build flux/images | kubeconform -strict -ignore-missing-schemas -summary
+    # `flux bootstrap` creates the parent kustomization at runtime. Validate the
+    # skeleton's three cluster-entry resources directly in the meantime.
+    - kubeconform -strict -ignore-missing-schemas -summary flux/clusters/demo/apps.yaml flux/clusters/demo/images.yaml flux/clusters/demo/image-update-automation.yaml

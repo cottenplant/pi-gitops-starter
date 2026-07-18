@@ -19,9 +19,9 @@ so no app can adopt one without the other.
 ## MR-built images can deploy before the MR merges
 
 **Symptom:** an unreviewed change is live on the cluster. **Cause:** the ImagePolicy scans a registry path and picks the
-highest timestamp — it has no concept of branches. An image built from an open MR lands in the same path and wins the
-sort. **Fix:** build images from the default branch only, and never offer manual MR image builds. Review happens before
-the build exists, not after.
+highest numeric prefix — it has no concept of branches. An image built from an open MR lands in the same path and can
+win the sort. **Fix:** build images from the default branch only, and never offer manual MR image builds. Review happens
+before the build exists, not after.
 
 ## Flux ≥ 2.8 removed `.Updated` from commit templates
 

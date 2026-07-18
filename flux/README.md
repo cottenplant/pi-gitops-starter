@@ -19,11 +19,11 @@ flux/
 ├── .sops.yaml            # encryption rule for *.enc.yaml (bring your own age key)
 ├── clusters/demo/        # cluster entry point: apps-<name> + images + image-update-automation
 │   └── flux-system/      # populated by `flux bootstrap`, committed by Flux itself
-├── apps/<name>/          # everything the app owns (ns, netpol via component, workload)
+├── apps/<name>/          # everything the app owns (ns, netpols, workload)
 │   └── image/            # the app's flux-system image CRs — own kustomization, no namespace field
 ├── images/               # aggregates every apps/*/image dir for the images Kustomization
 └── components/           # kustomize Components shared across apps
-    ├── network-policies/ # default-deny baseline + DNS egress
+    ├── network-policies/ # default-deny baseline + DNS egress; apps allow their own ingress
     └── pull-secret/      # sops walkthrough + example — no secret material in this repo
 ```
 

@@ -38,5 +38,21 @@ shows the shape.
    - app kustomization: uncomment `- ../../components/pull-secret` under `components:`
    - app deployment: uncomment the `imagePullSecrets` block
    - `clusters/demo/apps.yaml`: uncomment the `decryption` block on each app Kustomization that builds encrypted files
-   - scanning a private registry too? Point the ImageRepository `secretRef` at a token secret in `flux-system` (that's a
-     separate secret — the image-reflector-controller reads it, not the kubelet)
+
+## Private-registry scanning credential
+
+The pull secret above is copied into app namespaces for kubelets. The image-reflector-controller instead needs a
+registry credential in `flux-system` so it can list tags. Create a second GitLab deploy token with `read_registry` scope
+(or reuse the same token if that tradeoff is acceptable), then create the scanner secret directly in the cluster:
+
+```sh
+kubectl create secret docker-registry gitlab-registry \
+  --namespace=flux-system \
+  --docker-server=registry.gitlab.com \
+  --docker-username=<deploy-token-username> \
+  --docker-password=<deploy-token>
+```
+
+This imperative secret is not stored in Git. If your cluster manages bootstrap secrets declaratively, put the equivalent
+SOPS-encrypted Secret in that system instead. Finally, uncomment the `secretRef` in the app's `ImageRepository` and
+verify it with `flux get image repository -n flux-system`.

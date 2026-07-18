@@ -8,7 +8,7 @@ developer ──git push──▶ GitLab
                           ├─ CI: uv sync → pytest → docker build (native arm64)
                           │        │
                           │        ▼
-                          │   registry ── tag: <unix-ts>-<shortsha>
+                          │   registry ── tag: <pipeline-iid>-<shortsha>
                           │        │
                           ▼        ▼
                    GitRepository  ImageRepository ──▶ ImagePolicy
@@ -32,10 +32,10 @@ and commits it. Consequences worth having:
 
 ## The tag convention
 
-The build job tags images `$(date +%s)-$CI_COMMIT_SHORT_SHA`, e.g. `1752403201-a1b2c3d`. Per-commit continuous
-deployment has no meaningful semver, so the ImagePolicy needs something else to order by: the unix-timestamp prefix is
-monotonic, needs no coordination, and works on any CI system. The sha suffix never participates in the sort — it's there
-so a running pod can be traced to its commit. The policy's `filterTags` regex extracts the numeric prefix and picks the
+The build job tags images `$CI_PIPELINE_IID-$CI_COMMIT_SHORT_SHA`, e.g. `1842-a1b2c3d`. Per-commit continuous deployment
+has no meaningful semver, so the ImagePolicy needs something else to order by: GitLab's project-scoped pipeline IID is
+monotonic and unique, including when pipelines overlap. The sha suffix never participates in the sort — it's there so a
+running pod can be traced to its commit. The policy's `filterTags` regex extracts the numeric prefix and picks the
 highest:
 
 ```yaml
@@ -47,8 +47,8 @@ policy:
     order: asc
 ```
 
-The flip side of "highest timestamp wins" is a hazard: any image that lands in the scanned registry path deploys. That
-is why the build job runs on the default branch only — see
+The flip side of "highest pipeline IID wins" is a hazard: any matching image that lands in the scanned registry path
+deploys. That is why the build job runs on the default branch only — see
 [gotchas](gotchas.md#mr-built-images-can-deploy-before-the-mr-merges).
 
 ## The per-app boundary

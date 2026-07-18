@@ -28,12 +28,26 @@ end.
 
 2. Flux commits its own components under `flux/clusters/demo/flux-system/` and starts reconciling everything else in
    that directory: `apps.yaml`, `images.yaml`, and `image-update-automation.yaml`.
-3. Verify with `flux get kustomizations` — `apps-example-app` turns Ready once the Deployment points at an image you can
-   actually pull (swap in a public placeholder image for a dry run, or wire up the
-   [pull secret](../flux/components/pull-secret/README.md) for your registry).
-4. Private registry? Follow the pull-secret README end to end — it covers the sops/age setup, the pull secret itself,
-   and the separate scanning credential for the ImageRepository.
+3. Replace every `your-group` registry placeholder before expecting the demo to become Ready. For a public-image dry
+   run, set both the Deployment image and ImageRepository path to a repository that exists. For a private GitLab
+   registry, follow the [pull-secret guide](../flux/components/pull-secret/README.md) for both kubelet pulls and tag
+   scanning.
+4. Verify each link in the chain independently:
 
-## What's still missing at skeleton stage
+   ```sh
+   flux check
+   flux get kustomizations
+   flux get image repository -n flux-system
+   flux get image policy -n flux-system
+   flux get image update -n flux-system
+   ```
 
-Nothing — the remaining hardening (alerting, backups, ingress) is your cluster's story, not this kit's.
+   Both `images` and `apps-example-app` should become Ready, the ImageRepository should report tags, and the ImagePolicy
+   should select the highest pipeline-IID tag. After pushing a default-branch commit to the app repo, confirm that the
+   automation commits the new image pin to Git and that `flux get kustomizations` reports the resulting revision.
+
+## Skeleton boundary
+
+The example allows cluster traffic to its HTTP port, but it does not install an Ingress or expose the Service outside
+the cluster. Ingress, TLS, alerting, backups, and production secret lifecycle are deliberately left to the surrounding
+cluster. The skeleton is operational only after its registry placeholders and credentials are wired up.

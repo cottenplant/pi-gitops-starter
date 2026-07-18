@@ -1,6 +1,6 @@
-# Selects the newest image by the unix-timestamp prefix of the tag
-# (<unix-ts>-<shortsha> — see the template's .gitlab-ci.yml build job). The sha
-# suffix keeps tags traceable without participating in the sort.
+# Selects the newest image by the GitLab pipeline IID prefix of the tag
+# (<pipeline-iid>-<shortsha> — see the template's .gitlab-ci.yml build job).
+# The sha suffix keeps tags traceable without participating in the sort.
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:

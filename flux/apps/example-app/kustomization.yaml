@@ -9,6 +9,7 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
+  - allow-http.yaml
 components:
   - ../../components/network-policies
   # Pulling from a private registry? Encrypt the pull secret first, then enable:

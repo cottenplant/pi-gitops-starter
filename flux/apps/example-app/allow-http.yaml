@@ -1,0 +1,17 @@
+# Keep the Service reachable while the shared component default-denies every
+# other ingress port. In a real deployment, add a `from` selector for the known
+# caller or ingress-controller namespace when the traffic topology is known.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-http
+spec:
+  podSelector:
+    matchLabels:
+      app: example-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8000
