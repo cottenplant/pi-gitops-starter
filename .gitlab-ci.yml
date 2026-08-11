@@ -17,6 +17,18 @@ secret-scan:
   script:
     - gitleaks git --no-banner --redact .
 
+# Identifier tripwire. The pattern lives in a CI variable (LEAK_PATTERN), not
+# in this file: a public repo cannot carry its own denylist without publishing
+# the very names it exists to keep out. Filenames only, never matched lines, so
+# a hit stays out of the public job log. Forks without the variable skip this.
+leak-grep:
+  image: alpine:3.22
+  rules:
+    - if: $LEAK_PATTERN
+  script:
+    - apk add --no-cache git >/dev/null
+    - git grep -IilE "$LEAK_PATTERN" && { echo "leak-grep: identifier hits in the files above"; exit 1; } || echo clean
+
 # Render the template with default answers, fail if the committed example
 # drifted, then prove the rendered project actually works.
 template-validate:

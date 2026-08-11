@@ -9,6 +9,14 @@ Hard-won lessons from the source cluster, generalized. Each earned its place by 
 the finalizer never clears. **Fix:** check `kubectl get svc -A` for stuck finalizers before assuming a prune finished;
 clear the orphaned finalizer only after confirming the LB resource is actually gone.
 
+## Ping is a false health signal for a load-balancer VIP
+
+**Symptom:** monitoring pages for a VIP that stopped answering ping while the service behind it serves fine, or an
+evening goes into an "outage" that consists entirely of a failed ping. **Cause:** the VIP is never bound to an
+interface, and kube-proxy intercepts only the service's own ports, so ICMP is answered by whichever node owns the ARP
+entry and can return unreachable regardless of service health. **Fix:** probe the service's real port with a blackbox
+HTTP or TCP check; never alert on ICMP to a load-balancer VIP.
+
 ## Default-deny NetworkPolicy silently breaks DNS
 
 **Symptom:** every connection from the pod fails, and every error message points at the app — timeouts, unknown host,
@@ -36,6 +44,13 @@ kustomization sets `namespace: <app>`, and kustomize stamps it onto every resour
 ImageRepository/ImagePolicy objects that must live in `flux-system`. **Fix:** keep image CRs in a sibling `image/`
 directory with its own kustomization (no `namespace:` field) and reconcile them via a separate Flux Kustomization.
 
+## Helm-managed CRDs do not upgrade with the chart
+
+**Symptom:** a chart major-version bump reconciles clean, but resources using the new CRD fields fail validation: the
+cluster still runs the old CRDs. **Cause:** Helm treats CRDs as install-time objects and leaves them alone on upgrade,
+and helm-controller follows that default. **Fix:** this skeleton ships no HelmRelease, but the moment you add one, set
+`spec.upgrade.crds: CreateReplace` so chart-major bumps carry their CRDs with them.
+
 ## Validate manifests in CI, not on the cluster
 
 **Symptom:** a typo'd manifest merges, and the first error you see is a failed reconciliation in production. **Cause:**
@@ -50,8 +65,23 @@ wrong output. **Cause:** `-slim` images often ship without git, and many tools f
 instead of failing. **Fix:** when a job needs repo metadata, use the non-slim image variant (this repo's
 `template-validate` job hit exactly this).
 
+## A held kernel can still change under you
+
+**Symptom:** a node with kernel packages on `apt-mark hold` takes a routine upgrade and goes `NotReady` anyway.
+**Cause:** a hold pins package versions, it does not protect the running kernel: a newer kernel installs beside the held
+one, and the firmware tool rebuilds the boot image from the highest version it finds. **Fix:** remove the dependency
+instead of freezing it. On the source cluster that meant kube-proxy in nftables mode, so a kernel shipping without
+`ip_tables.ko` stopped mattering; the pin had protected nothing.
+
 ## A merge to the flux repo IS a deploy
 
 **Symptom:** "just merging config" restarts or breaks live workloads. **Cause:** Flux applies the default branch
 continuously; there is no staging buffer between merge and cluster. **Fix:** treat flux-repo MRs with deploy-level care,
 and prove structural changes are no-ops with a dry-run diff against the live cluster before merging.
+
+## `flux diff` masks secret values
+
+**Symptom:** a rotation that changes only a password shows zero drift and exits clean. **Cause:** secret values are
+masked in the diff, so encryption at rest blinds the review exactly where it matters. **Fix:** trust the dry-run for
+structure, not for secrets: verify a secret change by decrypting locally and by watching the consuming workload roll
+after the merge.
