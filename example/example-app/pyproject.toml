@@ -20,3 +20,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/example_app"]
+
+[tool.ruff.lint]
+unfixable = ["F401"]  # keep unused imports a visible failure, not a silent auto-delete

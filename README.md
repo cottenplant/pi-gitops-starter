@@ -53,7 +53,10 @@ node and OS provisioning are deliberately out of scope.
 ## Status
 
 Snapshot-versioned, not a product. This kit is extracted from a real cluster and updated when the source patterns change
-— pin a tag if you depend on it. Issues and MRs are welcome but response time is homelab-grade.
+— pin a tag if you depend on it. Issues and MRs are welcome but response time is homelab-grade. Working on the kit
+itself: run `pre-commit install` once after cloning; the hooks mirror the CI checks. Canonical home is GitLab, where
+those pipelines run; [github.com/cottenplant/pi-gitops-starter](https://github.com/cottenplant/pi-gitops-starter) is a
+read-only mirror.
 
 The cluster it comes from is written up at [moby-pi.net](https://moby-pi.net).
 
