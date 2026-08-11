@@ -29,13 +29,17 @@ repos:
     rev: v1.38.0
     hooks:
       - id: yamllint
-        args: ["-d", "{extends: relaxed, rules: {line-length: {max: 120, level: warning}}}"]
+        args:
+          [
+            "-d",
+            "{extends: relaxed, rules: {line-length: {max: 120, level: warning}}}",
+          ]
         types: [yaml]
 
   # Same prettier version the CI job pins; the rbubley fork mirrors it for
   # pre-commit (pre-commit/mirrors-prettier is archived, frozen at 3.1.0).
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.9.5
+    rev: v3.9.6
     hooks:
       - id: prettier
         types_or: [markdown, yaml, json]

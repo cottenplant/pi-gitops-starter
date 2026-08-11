@@ -5,7 +5,7 @@
 prettier:
   image: node:22-slim
   script:
-    - npx prettier@3.9.5 --check "**/*.{md,yml,yaml,json}"
+    - npx prettier@3.9.6 --check "**/*.{md,yml,yaml,json}"
 
 # Full-history secret scan — table stakes for a public repo.
 secret-scan:
